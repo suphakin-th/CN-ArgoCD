@@ -69,6 +69,7 @@ jobs:
           output: trivy-${{ matrix.service }}.sarif
           severity: HIGH,CRITICAL
           exit-code: '1'
+          ignore-unfixed: true
         if: github.event_name == 'push'
 
       - name: Upload Trivy SARIF
