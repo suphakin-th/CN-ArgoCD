@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-service
+  namespace: apps
+  labels:
+    app: python-service
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: python-service
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: workload-identity-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: python-service
+          image: ghcr.io/suphakin-th/python-service:latest
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: GO_SERVICE_ADDR
+              value: "go-service:9090"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "tempo.monitoring:4317"
+            - name: SERVICE_VERSION
+              value: "0.1.0"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: python-service

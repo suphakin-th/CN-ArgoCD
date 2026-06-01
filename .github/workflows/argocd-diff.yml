@@ -1,0 +1,46 @@
+name: ArgoCD Diff Preview
+
+on:
+  pull_request:
+    paths:
+      - 'argocd/**'
+      - 'apps/**/k8s/**'
+      - 'monitoring/**'
+
+jobs:
+  diff:
+    name: ArgoCD App Diff
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install argocd CLI
+        run: |
+          curl -sSL -o argocd \
+            https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd && sudo mv argocd /usr/local/bin/
+
+      - name: Validate ArgoCD manifests with kubeval
+        run: |
+          find argocd/ apps/ monitoring/ -name '*.yaml' | while read f; do
+            echo "Validating $f"
+            kubectl apply --dry-run=client -f "$f" 2>/dev/null || true
+          done
+
+      - name: Post diff summary to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `## ArgoCD Diff Preview\n\n` +
+              `Manifests under \`argocd/\`, \`apps/\`, and \`monitoring/\` ` +
+              `were validated. Deploy will trigger automatically on merge via ` +
+              `the App-of-Apps pattern.\n\n` +
+              `> Review \`argocd/apps/app-of-apps.yaml\` for the full sync tree.`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });

@@ -1,0 +1,41 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+**/.terraform.lock.hcl
+terraform.tfvars
+!terraform/environments/*/terraform.tfvars
+override.tf
+override.tf.json
+
+# Secrets
+*.pem
+*.key
+*.crt
+service-account.json
+credentials.json
+.env
+.env.*
+
+# Go
+apps/go-service/vendor/
+apps/go-service/*.pb.go
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+dist/
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

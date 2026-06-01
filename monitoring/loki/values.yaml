@@ -1,0 +1,55 @@
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: gcs
+    gcs:
+      bucket_name: cn-fintech-loki-chunks
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: gcs
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  limits_config:
+    retention_period: 30d
+    ingestion_rate_mb: 16
+    ingestion_burst_size_mb: 32
+    max_streams_per_user: 10000
+  compactor:
+    retention_enabled: true
+    delete_request_store: gcs
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+promtail:
+  enabled: true
+  config:
+    logLevel: info
+    serverPort: 3101
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+    snippets:
+      pipelineStages:
+        - docker: {}
+        - match:
+            selector: '{namespace="apps"}'
+            stages:
+              - json:
+                  expressions:
+                    level: level
+                    msg: msg
+                    trace_id: trace_id
+              - labels:
+                  level:
+                  trace_id:

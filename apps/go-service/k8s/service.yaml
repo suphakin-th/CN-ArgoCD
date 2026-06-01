@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-service
+  namespace: apps
+  labels:
+    app: go-service
+spec:
+  selector:
+    app: go-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: grpc
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workload-identity-sa
+  namespace: apps
+  annotations:
+    iam.gke.io/gcp-service-account: wi-prod-workload@cn-fintech-gke.iam.gserviceaccount.com
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: go-service-pdb
+  namespace: apps
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: go-service

@@ -1,0 +1,101 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: fintech-gateway
+  namespace: istio-ingress
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      hosts:
+        - "*"
+      tls:
+        mode: SIMPLE
+        credentialName: fintech-tls-cert
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: go-service-vs
+  namespace: apps
+spec:
+  hosts:
+    - go-service
+  gateways:
+    - istio-ingress/fintech-gateway
+    - mesh
+  http:
+    - match:
+        - uri:
+            prefix: /api/v1/greet
+      route:
+        - destination:
+            host: go-service
+            port:
+              number: 8080
+      retries:
+        attempts: 3
+        perTryTimeout: 5s
+      timeout: 15s
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: python-service-vs
+  namespace: apps
+spec:
+  hosts:
+    - python-service
+  gateways:
+    - mesh
+  http:
+    - route:
+        - destination:
+            host: python-service
+            port:
+              number: 8000
+      retries:
+        attempts: 3
+        perTryTimeout: 5s
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: apps
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: go-service-dr
+  namespace: apps
+spec:
+  host: go-service
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        h2UpgradePolicy: UPGRADE
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s
