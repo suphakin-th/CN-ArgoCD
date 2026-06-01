@@ -7,7 +7,6 @@ RUN pip install --no-cache-dir --upgrade pip
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Generate gRPC stubs from proto file
 COPY proto/greeter.proto .
 RUN python -m grpc_tools.protoc \
       -I. \
