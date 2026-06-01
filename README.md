@@ -9,9 +9,9 @@ A multi-tenant Kubernetes platform on GCP managed entirely through Terraform and
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      GitHub (source of truth)                   │
-│   terraform/  ──▶  GCP infra                                    │
-│   argocd/     ──▶  ArgoCD App-of-Apps ──▶  Cluster sync        │
-│   apps/       ──▶  Container images (GHCR) ──▶ Deployments     │
+│   terraform/  ->  GCP infra                                    │
+│   argocd/     ->  ArgoCD App-of-Apps ->  Cluster sync        │
+│   apps/       ->  Container images (GHCR) -> Deployments     │
 └─────────────────────────────────────────────────────────────────┘
 
                         GCP Project: cn-fintech-gke
