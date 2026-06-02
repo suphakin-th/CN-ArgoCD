@@ -1,5 +1,14 @@
 # CN-ArgoCD — Cloud-Native Platform on GKE
 
+![GKE](https://img.shields.io/badge/GKE-Private_Cluster-4285F4?logo=googlecloud&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform&logoColor=white)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-EF7B4D?logo=argo&logoColor=white)
+![Istio](https://img.shields.io/badge/Istio-mTLS-466BB0?logo=istio&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C?logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-LGTM-F46800?logo=grafana&logoColor=white)
+![Go](https://img.shields.io/badge/Go-gRPC-00ADD8?logo=go&logoColor=white)
+![Python](https://img.shields.io/badge/Python-FastAPI-3776AB?logo=python&logoColor=white)
+
 A multi-tenant Kubernetes platform on GCP managed entirely through Terraform and GitOps (ArgoCD). Everything from VPC provisioning to workload deployment is driven by code and git.
 
 ---
